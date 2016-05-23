@@ -1,0 +1,425 @@
+---
+output: html_document
+---
+Yang Bo
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(GGally)
+library(scales)
+library(gridExtra)
+
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+
+redwinedata <- read.csv("wineQualityReds.csv")
+
+```
+
+#key questions
+**Which chemical properties influence high and low quality red wine most?**
+**Is there any group of chemical properties has high correlation?**
+**how to better predict quality of red wine based on the research?**
+
+# Univariate Plots Section
+###Structure of the Dataset
+
+```{r echo=FALSE, Univariate_Plots}
+# str of data
+str(redwinedata)
+
+# head of data
+head(redwinedata)
+
+# summary of data
+summary(redwinedata)
+
+
+```
+# Univariate Plot
+## Wine Quality
+```{r echo=FALSE}
+#ggplot(redwinedata, aes(x = quality)) + ggtitle("Red Wine Quality") + stat_count(width = 0.5) +scale_x_discrete()
+
+ggplot(redwinedata, aes(x=quality)) + geom_bar()
+
+```
+
+We can see that most of wine's quality is 5 or 6.
+
+## Plot of each chemical properties
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = fixed.acidity)) + ggtitle("fixed.acidity") + geom_histogram(bins = 50)
+
+```
+
+Most of wine's fixed acidity is around 8.
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = citric.acid)) + ggtitle("citric.acid") + geom_histogram()
+
+```
+
+Three peaks of wine's citric acid is 0, 0.25 and 0.50 
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = volatile.acidity)) + ggtitle("volatile.acidity") + geom_histogram()
+
+```
+
+We can see that most of wine's volatile acidity is between 0.4-0.8.
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = residual.sugar)) + ggtitle("residual sugar") + geom_histogram()
+
+```
+
+limit the x axis
+
+
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = residual.sugar)) + ggtitle("residual sugar") + geom_histogram() +coord_cartesian(xlim=c(1, 5))
+
+```
+
+
+most of wine's residual sugar is around 2. and it is normally distributed.
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = chlorides)) + ggtitle("chlorides") + geom_histogram()+scale_x_log10()
+
+```
+
+most of wine's chlorides is around 0.1.
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = free.sulfur.dioxide)) + ggtitle("sulfur dioxide") + geom_histogram()
+
+```
+
+most of wine's free sulfur dioxide is below 40 and there is a peak around 5,10 and 18.
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = density)) + ggtitle("density") + geom_histogram()
+
+```
+
+The density of wine is normally  distributed. 
+
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = pH)) + ggtitle("Ph") + geom_histogram()
+
+```
+
+The density of wine is also normally  distributed, and the peak is around 3.3.
+
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = sulphates
+)) + ggtitle("Sulphates") + geom_histogram()
+
+summary(redwinedata$sulphates)
+```
+
+most of wine's Sulphates is below 1.0 and the peak is around 0.6.  The Median of sulphates is 0.62.And the Mean is 0.66.
+
+```{r echo=FALSE}
+ggplot(data = redwinedata, aes(x = alcohol
+)) + ggtitle("Alcohol") + geom_histogram()
+
+```
+
+Most of wine's alchohol is between 9-12. The peak is within 9-10.
+
+
+# Univariate Analysis
+
+
+
+### What is the structure of your dataset?
+
+1599 obs. of 13 variables (features)
+
+### What is/are the main feature(s) of interest in your dataset?
+
+Based on my previous knowledge to wine, I think the Alchohol(wine is one kind of Alchohol after all:), and acid(taste of the wine) might be the most important features which can influence the quality.The group of acid might has high correlation. I am also curious to know that is there any other features has high correlaiton.
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+
+Sugar (how sweet of the wine) and density might also have influence on the quality
+
+### Did you create any new variables from existing variables in the dataset?
+
+No
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+
+I limited the x axis of the Sugar plot since most of wine's residual sugar is below 5.For the free sulfur dioxide  and sulphates, I can do the same. I didn't do it because it seems won't influence the wine's quality very much.
+
+
+# Bivariate Plots Section
+
+```{r echo=FALSE}
+## knitr configuration: http://yihui.name/knitr/options#chunk_options
+opts_chunk$set(comment = "", error= TRUE, warning = FALSE, message = FALSE,
+               tidy = FALSE, cache = F, echo = T,
+               fig.width = 20, fig.height = 20)
+
+## R configuration
+options(width = 116, scipen = 5)
+```
+
+
+```{r echo=FALSE, Bivariate_Plots}
+
+pair1 <- data.frame(
+          alcohol = redwinedata$alcohol,
+          fixed.acidity =redwinedata$fixed.acidity,
+          volatile.acidity = redwinedata$volatile.acidity,
+          citric.acid = redwinedata$citric.acid,
+          residual.sugar = redwinedata$residual.sugar,
+          chlorides = redwinedata$chlorides,
+          free.sulfur.dioxide = redwinedata$free.sulfur.dioxide,
+          total.sulfur.dioxide = redwinedata$total.sulfur.dioxide,
+          sulphates = redwinedata$sulphates,
+          density = redwinedata$density,
+          ph = redwinedata$pH,
+          quality = redwinedata$quality
+          
+    
+)
+
+ggpairs(pair1, title = "CorrelationMap")
+
+```
+
+
+
+# Bivariate Analysis
+
+Drawing more detailed plots of these pairs find in ggpairs
+
+
+
+### 1. quality against alcohol
+
+```{r echo=FALSE}
+
+
+alcohol.ql <- ggplot(aes(x = quality, y = alcohol), data = redwinedata) + 
+  geom_point(alpha = 1/5, position = position_jitter(h = 0)) +
+  coord_trans(x = "log10") +
+  geom_smooth(method = "lm", color = "red")
+
+
+grid.arrange( alcohol.ql,ncol = 1)
+```
+
+high alcohol red wine has higher quality score.Most Red wine with the mean quality has alcohol around 10, while red wine above mean quality has obvious higher alcohol. 
+
+### 2. quality against volatile acid
+
+```{r echo=FALSE}
+
+
+vola.ql <- ggplot(aes(x = quality, y = volatile.acidity), data = redwinedata) + 
+  geom_point(alpha = 1/5, position = position_jitter(h = 0)) +
+  coord_trans(x = "log10") +
+  geom_smooth(method = "lm", color = "red")
+
+
+grid.arrange( vola.ql,ncol = 1)
+```
+
+Low volatile acidity red wine has higher quality score.Most Red wine with the mean quality has volatile acidity around 0.6, while red wine above mean quality has obvious lower volatile acidity. 
+
+### 3. quality against citric acid
+
+```{r echo=FALSE}
+
+
+citric.ql <- ggplot(aes(x = quality, y = citric.acid), data = redwinedata) + 
+  geom_point(alpha = 1/5, position = position_jitter(h = 0)) +
+  coord_trans(x = "log10") +
+  geom_smooth(method = "lm", color = "red")
+
+
+grid.arrange( citric.ql,ncol = 1)
+```
+
+high citric acid red wine has higher quality score.Most Red wine with the mean quality has citric acid below 0.50, while red wine above mean quality has obvious higher citric acid around 0.50. 
+
+### 4. ph against acid
+
+```{r echo=FALSE}
+
+
+citr.ac <- ggplot(aes(x = pH, y = citric.acid), data = redwinedata) + 
+  geom_point(alpha = 1/5, position = position_jitter(h = 0)) +
+  coord_trans(x = "log10") +
+  geom_smooth(method = "lm", color = "red")
+
+fix.ac <- ggplot(aes(x = pH, y = fixed.acidity), data = redwinedata) + 
+  geom_point(alpha = 1/5, position = position_jitter(h = 0)) +
+  coord_trans(x = "log10") +
+  geom_smooth(method = "lm", color = "red")
+
+grid.arrange( citr.ac, fix.ac, ncol = 2)
+```
+
+PH has a very strong negative relationship with fixed acidity.(-0.683) and citric acid(-0.542)
+
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+From the Matrix of Plots(CorrelationMap), we could see that the Alchohol has a relatively high correlation with Quality. The fixed acidity and citric acid is also positively correlated with Quality. The volatile acidity is negatively correlated with Quality.
+
+We could see from the Description of attributes:
+volatile acidity: the amount of acetic acid in wine, which at too high of levels can lead to an unpleasant, vinegar taste.
+
+
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+The Sulphates is positively correlated with Quality.
+
+The fixed acidity has a high correlation with citric acid and is negatively correlated with volatile acidity.
+
+The chiorides is positively correlated with Sulphates.
+
+
+
+### What was the strongest relationship you found?
+
+As for the quality, the strongest relationship is with Alcohol(+0.476),citric acid(+0.226)  sulphate(+0.251) , and volatile acidity(-0.391).
+
+And the PH has a very strong negative relationship with fixed acidity.(-0.683) and citric acid(-0.542) which is a very naturally result, and a relatively positive relationship wiht Alcoho and volatie acidity.
+
+
+
+
+
+
+
+
+# Multivariate Plots Section
+
+##Make a principle components analysis
+
+```{r echo=FALSE}
+## knitr configuration: http://yihui.name/knitr/options#chunk_options
+opts_chunk$set(comment = "", error= TRUE, warning = FALSE, message = FALSE,
+               tidy = FALSE, cache = F, echo = T,
+               fig.width = 16, fig.height = 16)
+
+## R configuration
+options(width = 116, scipen = 5)
+```
+
+```{r echo=FALSE, Multivariate_Plots}
+# number of elements
+num = length( as.matrix( redwinedata )) / length( redwinedata )
+
+# pca analysis
+pca <- prcomp( redwinedata, scale = TRUE )
+biplot( pca, xlabs = rep( '.', num ) , main = "PCA Analysis")
+
+
+```
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+1. Alcohol is the main factor which could positively influence the Quality of the Wine.
+2. Volatile acid is the main factor which could negatively influence the Quality of the Wine.
+
+
+
+### Were there any interesting or surprising interactions between features?
+The fixed acidity, citric acid is generally same thing and the PH is a negative indicator of the acid.
+The 
+
+
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+
+No
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+ggplot(data = redwinedata, aes(x = quality)) + ggtitle("Red Wine Quality") + geom_histogram()
+
+```
+
+### Description One
+
+We can see that most of wine's quality is 5 or 6 and very few has lower score and higher score. 
+
+
+### Plot Two
+```{r echo=FALSE}
+
+
+alcohol.ql <- ggplot(aes(x = quality, y = alcohol), data = redwinedata) + 
+  geom_point(alpha = 1/5, position = position_jitter(h = 0)) +
+  coord_trans(x = "log10") +
+  geom_smooth(method = "lm", color = "red")
+
+
+grid.arrange( alcohol.ql,ncol = 1)
+```
+
+
+
+### Description Two
+From the plot above, we could see that the high alcohol red wine has higher quality score.Most Red wine with the mean quality has alcohol around 10, while red wine above mean quality has obvious higher alcohol.
+
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+# number of elements
+num = length( as.matrix( redwinedata )) / length( redwinedata )
+
+# pca analysis
+pca <- prcomp( redwinedata, scale = TRUE )
+biplot( pca, xlabs = rep( '.', num ), main = "PCA Analysis")
+```
+
+
+### Description Three
+1. Alcohol is the main factor which could positively influence the Quality of the Wine.
+2. Volatile acid is the main factor which could negatively influence the Quality of the Wine.
+3. The fixed acidity, citric acid is generally same thing and the PH is a negative indicator of the acid.
+
+
+# Reflection
+
+First, I analysis and plot each individual feature's histograms and observe their characterstic. 
+
+Secondly, I research the correlation between quality of red wine and other features and study which features determine the quality. Also I learn about the correlation between the other features.
+
+I found that the quality is strongly positively correlated with alcohol,negatively correlated with volatile acidity and relatively correlated with citric acid and sulphates.
+
+Thirdly, I make a principle component analysis to the data set which prove my findings in the second part. Also I found that the fixed acidity, citric acid is generally same thing and the PH is a negative indicator of the acid.
+
+It is worthy to be noted that the quality of red wine is given by experts with score from 0 to 10. In the dataset, most redwine is rated with score 5 and 6, and very few has lower score and higher score. 
+
+
